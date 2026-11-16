@@ -25,14 +25,31 @@ jobs:
           grep -qx 'name: onboardhub-data' "$RUNNER_TEMP/SKILL.md"
           cp "$RUNNER_TEMP/SKILL.md" skills/onboardhub-data/SKILL.md
 
+      - name: Set up git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       - name: Commit if changed
         run: |
           if git diff --quiet; then
             echo "SKILL.md is up to date."
             exit 0
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add skills/onboardhub-data/SKILL.md
           git commit -m "Sync SKILL.md from onbo-hub.com"
+          git push
+
+      # GitHub turns off scheduled workflows in public repositories after 60 days
+      # without activity. SKILL.md may not change that often, so if nothing has been
+      # committed for 45 days, leave an empty commit to keep this schedule running.
+      - name: Keep the schedule alive
+        run: |
+          last=$(git log -1 --format=%ct)
+          age_days=$(( ($(date +%s) - last) / 86400 ))
+          if [ "$age_days" -lt 45 ]; then
+            echo "Last commit was $age_days days ago."
+            exit 0
+          fi
+          git commit --allow-empty -m "Keep the daily sync alive"
           git push
