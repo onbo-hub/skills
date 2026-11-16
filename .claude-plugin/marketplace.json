@@ -1,0 +1,22 @@
+{
+  "name": "onbo-hub",
+  "owner": {
+    "name": "Onbo Hub"
+  },
+  "metadata": {
+    "description": "Agent skills for Onbo Hub (onbo-hub.com): real onboarding flows, paywalls, growth posts and ads from revenue-verified mobile apps."
+  },
+  "plugins": [
+    {
+      "name": "onboardhub-data",
+      "description": "Pull real onboarding screens, paywalls, monetization notes, growth posts and ads from revenue-verified apps on Onbo Hub while you design or analyze an app. Requires a Pro API key.",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/onboardhub-data"],
+      "homepage": "https://onbo-hub.com/docs/api",
+      "repository": "https://github.com/onbo-hub/skills",
+      "license": "MIT",
+      "keywords": ["onboarding", "paywall", "mobile-apps", "monetization", "app-growth"]
+    }
+  ]
+}

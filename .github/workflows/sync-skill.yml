@@ -1,0 +1,38 @@
+# Keeps skills/onboardhub-data/SKILL.md in sync with https://onbo-hub.com/skill.md.
+# The site is the single source of truth; edit the skill there, not here.
+# Commits only when the file actually changed.
+name: Sync SKILL.md from onbo-hub.com
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # every day at 00:00 UTC (09:00 JST)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch SKILL.md
+        run: |
+          curl -fsSL --retry 3 https://onbo-hub.com/skill.md -o "$RUNNER_TEMP/SKILL.md"
+          # Refuse to overwrite with an error page or a broken file.
+          head -n 1 "$RUNNER_TEMP/SKILL.md" | grep -qx -- '---'
+          grep -qx 'name: onboardhub-data' "$RUNNER_TEMP/SKILL.md"
+          cp "$RUNNER_TEMP/SKILL.md" skills/onboardhub-data/SKILL.md
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet; then
+            echo "SKILL.md is up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add skills/onboardhub-data/SKILL.md
+          git commit -m "Sync SKILL.md from onbo-hub.com"
+          git push
