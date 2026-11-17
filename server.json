@@ -1,0 +1,25 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.onbo-hub/mcp",
+  "title": "Onbo Hub",
+  "description": "Real onboarding flows, paywalls and growth tactics from mobile apps with verified revenue.",
+  "websiteUrl": "https://onbo-hub.com/docs/api#mcp",
+  "repository": {
+    "url": "https://github.com/onbo-hub/skills",
+    "source": "github"
+  },
+  "icons": [
+    {
+      "src": "https://onbo-hub.com/icon.png",
+      "mimeType": "image/png",
+      "sizes": ["512x512"]
+    }
+  ],
+  "version": "1.0.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://onbo-hub.com/mcp"
+    }
+  ]
+}
