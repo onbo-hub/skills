@@ -14,7 +14,41 @@ Give your AI agent real examples from apps that make money while it designs your
 
 The agent picks comparable apps, pulls the matching screens (paywall, question, analyzing, personalized plan, rating request, permission primer…), looks at the images and turns what they share into a plan for your app.
 
-## Install
+## MCP server
+
+The easiest way to connect, especially from claude.ai or ChatGPT. Sign in with your Onbo Hub account (Pro plan) — no key to copy. The tools return the screen images themselves, so the AI can look at paywalls and onboarding screens directly.
+
+```text
+https://onbo-hub.com/mcp
+```
+
+- **claude.ai / Claude Desktop:** Settings → Connectors → Add custom connector, paste the URL, then sign in.
+- **ChatGPT:** add a custom connector (MCP) with the URL, then sign in.
+- **Claude Code:**
+
+  ```bash
+  claude mcp add --transport http onbo-hub https://onbo-hub.com/mcp
+  ```
+
+  Then run `/mcp` in Claude Code and sign in.
+- **Cursor and other tools that send their own headers:** use your API key instead of signing in.
+
+  ```json
+  {
+    "mcpServers": {
+      "onbo-hub": {
+        "url": "https://onbo-hub.com/mcp",
+        "headers": { "Authorization": "Bearer ohub_your_key_here" }
+      }
+    }
+  }
+  ```
+
+Tools: `find_screens` (one kind of screen across apps, e.g. every paywall, highest revenue first), `search_apps`, `get_app`, `view_screens`, `get_stats`.
+
+## Install the skill
+
+The skill calls the REST API with an API key. Use it if you prefer skills over MCP.
 
 ### Claude Code
 
@@ -77,6 +111,7 @@ The data is for reference and internal use: to inform your own product, design a
 
 [Onbo Hub](https://onbo-hub.com) のデータを AI エージェントから使うためのスキルです。売上のあるアプリのオンボーディング（最初の画面から課金画面まで、画面の種類つき）・課金の仕組み・伸びた SNS 投稿・広告を、オンボーディングや課金画面を作りながら参考にしたり、分析したりできます。
 
-- Claude Code: `/plugin marketplace add onbo-hub/skills` → `/plugin install onboardhub-data@onbo-hub`
+- MCP サーバー（いちばん手軽）: `https://onbo-hub.com/mcp` を claude.ai・ChatGPT のカスタムコネクタに入れるか、Claude Code で `claude mcp add --transport http onbo-hub https://onbo-hub.com/mcp` → `/mcp` でログイン
+- スキル（Claude Code）: `/plugin marketplace add onbo-hub/skills` → `/plugin install onboardhub-data@onbo-hub`
 - そのほかのエージェント: `npx skills add onbo-hub/skills`、または <https://onbo-hub.com/skill.md> を読ませる
 - API キーは Pro プランで [ダッシュボード](https://onbo-hub.com/dashboard) から発行できます
