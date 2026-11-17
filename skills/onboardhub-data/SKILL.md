@@ -4,7 +4,7 @@ description: Real onboarding flows, paywalls, monetization setups, growth posts 
 compatibility: Requires internet access to call https://onbo-hub.com/api/v1
 metadata:
   author: onbo-hub
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Onbo Hub Data Skill
@@ -58,8 +58,8 @@ Rate limit: 60 requests per minute per key.
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `category` | string | Filter by category (see list below) |
-| `revenue_min` | number | Min revenue in USD (e.g. `100000` = $100k+) |
-| `revenue_max` | number | Max revenue in USD |
+| `revenue_min` | number | Min monthly revenue in USD (e.g. `100000` = $100k/month or more) |
+| `revenue_max` | number | Max monthly revenue in USD |
 | `limit` | number | Results per page (default 50, max 100) |
 | `offset` | number | Pagination offset |
 | `fields` | string | Comma-separated field names to return |
@@ -68,14 +68,14 @@ Rate limit: 60 requests per minute per key.
 
 **Key fields:**
 - `name`, `slug`, `category`, `icon_url`
-- `revenue` — `{ amount: number (USD), currency: string }`
+- `revenue` — monthly revenue, `{ amount: number, currency: "USD" }`
 - `founder` — `{ name: string, url: string }`
 - `monetization_strategy_en` — monetization approach in English
 - `ux_highlights_en` — UX highlights in English
 - `target_audience_en` — target audience in English
 - `app_store_url`, `play_store_url`, `website_url`
 
-The list does not include screenshots. Fetch an app's detail to get its screens.
+The list does not include screenshots. To compare one kind of screen across apps, use `GET /api/v1/screenshots`; for one app's whole flow, fetch its detail.
 
 **Response shape:**
 ```json
@@ -96,6 +96,57 @@ curl -H "X-API-Key: $ONBOARDHUB_API_KEY" \
 # $100k+ apps, lightweight fields only
 curl -H "X-API-Key: $ONBOARDHUB_API_KEY" \
   "https://onbo-hub.com/api/v1/apps?revenue_min=100000&fields=name,slug,category,revenue,monetization_strategy_en"
+```
+
+---
+
+### Screens by type across apps — `GET /api/v1/screenshots`
+
+The fastest way to compare the same screen across apps — for example every paywall, highest-revenue apps first. Results are grouped by app, and paging counts apps.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `screen_type` | string | **Required.** One or more screen types, comma-separated (list under App detail), e.g. `paywall` or `question,loading,result` |
+| `tags` | string | Paywall tags the app must have, comma-separated; all must match: `free_trial`, `trial_timeline`, `discount`, `plan_choice` |
+| `category` | string | Same as List apps |
+| `revenue_min` / `revenue_max` | number | Monthly revenue in USD |
+| `sort` | string | `revenue` (default, highest monthly revenue first) or `newest` (most recently added) |
+| `limit` | number | Apps per page (default 20, max 50) |
+| `offset` | number | Pagination offset |
+
+Each item in `data` is one app:
+- `app` — `name`, `slug`, `category`, `icon_url`, `revenue`, `url` (its page on Onbo Hub)
+- `total_screens` — length of the app's whole onboarding
+- `screens[]` — the matching screens in flow order: `id`, `image_url`, `position` (1 = first screen), `screen_type`, `screen_tags`
+
+`meta.stats` has, for each requested type, `share_pct` (% of apps that show it), `median_position` (where it usually appears) and, for `paywall`, `tag_pct` (% of those apps whose paywall has each tag). Stats cover the apps matching `category` and `revenue_*`; `tags` does not change them. Only apps whose screens have been classified are included.
+
+**Response shape:**
+```json
+{
+  "data": [
+    {
+      "app": { "name": "...", "slug": "...", "category": "...", "revenue": { "amount": <int>, "currency": "USD" }, "url": "https://onbo-hub.com/apps/..." },
+      "total_screens": <int>,
+      "screens": [ { "id": "...", "image_url": "https://...", "position": <int>, "screen_type": "paywall", "screen_tags": ["free_trial"] } ]
+    }
+  ],
+  "meta": { "total": <int>, "limit": 20, "offset": 0, "returned": <int>, "stats": { "paywall": { "share_pct": <int>, "median_position": <int>, "tag_pct": { ... } } }, "terms": { ... } }
+}
+```
+
+```bash
+# Paywalls of the top-earning Health & Fitness apps
+curl -H "X-API-Key: $ONBOARDHUB_API_KEY" \
+  "https://onbo-hub.com/api/v1/screenshots?screen_type=paywall&category=Health%20%26%20Fitness&limit=5"
+
+# Paywalls that offer a free trial and a discount
+curl -H "X-API-Key: $ONBOARDHUB_API_KEY" \
+  "https://onbo-hub.com/api/v1/screenshots?screen_type=paywall&tags=free_trial,discount&limit=5"
+
+# The quiz part of the flow (questions → analyzing → personalized plan)
+curl -H "X-API-Key: $ONBOARDHUB_API_KEY" \
+  "https://onbo-hub.com/api/v1/screenshots?screen_type=question,loading,result&limit=5"
 ```
 
 ---
@@ -164,23 +215,24 @@ If it is not set, ask: "Please get your API key from https://onbo-hub.com/dashbo
 
 | User request | Calls |
 |-------------|-------|
-| "Design a paywall for my meditation app" | `GET /api/v1/apps?category=Health%20%26%20Fitness&fields=name,slug,revenue,monetization_strategy_en` → top apps by revenue → `GET /api/v1/apps/{slug}` for each → screens with `screen_type: "paywall"` |
-| "Build a quiz-style onboarding like the top apps" | Same, but take `question`, `loading` and `result` screens and keep their order |
-| "When do apps ask for a rating?" | App details → position (`sort_order`) of `rating_request` screens |
+| "Design a paywall for my meditation app" | `GET /api/v1/screenshots?screen_type=paywall&category=Health%20%26%20Fitness&limit=5` → open the images |
+| "Build a quiz-style onboarding like the top apps" | `GET /api/v1/screenshots?screen_type=question,loading,result&limit=5` (screens come in flow order) |
+| "When do apps ask for a rating?" | `GET /api/v1/screenshots?screen_type=rating_request` → `position` / `total_screens`, `meta.stats` |
+| "What share of paywalls offer a free trial?" | `GET /api/v1/screenshots?screen_type=paywall&limit=1` → `meta.stats.paywall.tag_pct` |
 | "Analyze monetization strategies" | `GET /api/v1/apps?fields=name,category,revenue,monetization_strategy_en` |
-| "What % of apps mention a free trial?" | `GET /api/v1/stats` |
+| "Revenue distribution / category breakdown" | `GET /api/v1/stats` |
 | "UX strategies of $100k+ apps" | `GET /api/v1/apps?revenue_min=100000&fields=name,revenue,ux_highlights_en` |
 | "Which TikTok hooks grew these apps?" | App details → `social_posts[]` (sort by `view_count`) |
 | "Is this app running ads?" | App detail → `meta_ads`, `apple_ads` |
 | "Tell me about Pingo AI" | `GET /api/v1/apps/pingo-ai` |
 
-Fetch details for only the apps you need (3–5 is usually enough for a design reference) to stay inside the rate limit.
+For a design reference, 3–5 comparable apps is usually enough. Fetch an app's detail only when you need its whole flow, posts or ads.
 
 ### Step 3 — Work with the data
 
 **Design reference**
 1. Pick 3–5 comparable apps: same category or audience, highest revenue first.
-2. Pull the relevant screens by `screen_type` and open the images.
+2. Pull the relevant screens with `GET /api/v1/screenshots` and open the images.
 3. Note what they share: where in the flow the screen comes, headline and button copy, layout, how plans and trials are shown (`screen_tags`).
 4. Turn it into a concrete spec or implementation for the user's app. Adapt the patterns to the user's product — do not copy another app's copy, brand or artwork verbatim.
 
@@ -203,8 +255,10 @@ Fetch details for only the apps you need (3–5 is usually enough for a design r
 
 | Status | Cause | Fix |
 |--------|-------|-----|
+| 400 | Invalid parameter (e.g. unknown `screen_type`) | Use one of the values listed in the error message |
 | 401 | Missing or invalid API key | Re-check the key at https://onbo-hub.com/dashboard |
 | 403 | No active Pro subscription | Verify the subscription |
 | 404 | App slug not found | Use `GET /api/v1/apps` to list valid slugs |
 | 429 | Over 60 requests per minute | Wait the number of seconds in the error, then retry |
 | 500 | Server error | Contact hello@onbo-hub.com |
+| 503 | Screen types temporarily unavailable | Retry in a few minutes |
