@@ -4,7 +4,7 @@ description: Real onboarding flows, paywalls, monetization setups, growth posts 
 compatibility: Requires internet access to call https://onbo-hub.com/api/v1
 metadata:
   author: onbo-hub
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Onbo Hub Data Skill
@@ -48,6 +48,8 @@ https://onbo-hub.com
 ```
 
 Rate limit: 60 requests per minute per key.
+
+**MCP alternative:** the same data is available from the remote MCP server at `https://onbo-hub.com/mcp` (tools: `find_screens`, `search_apps`, `get_app`, `view_screens`, `get_stats`; they return the screen images directly). MCP clients that support OAuth sign in with an Onbo Hub account; others can send the API key as `Authorization: Bearer <key>`. If those tools are already connected, prefer them over these REST calls.
 
 ---
 
