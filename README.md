@@ -16,7 +16,9 @@ The agent picks comparable apps, pulls the matching screens (paywall, question, 
 
 ## MCP server
 
-The easiest way to connect, especially from claude.ai or ChatGPT. Sign in with your Onbo Hub account (Pro plan) — no key to copy. The tools return the screen images themselves, so the AI can look at paywalls and onboarding screens directly.
+The easiest way to connect, especially from claude.ai or ChatGPT. Sign in with your Onbo Hub account — no key to copy. The tools return the screen images themselves, so the AI can look at paywalls and onboarding screens directly.
+
+`search_apps` and `get_stats` work with a free account. `find_screens`, `get_app` and `view_screens` (screen images, full onboarding flows, growth posts and ads) need the Pro plan.
 
 ```text
 https://onbo-hub.com/mcp
@@ -111,7 +113,7 @@ The data is for reference and internal use: to inform your own product, design a
 
 [Onbo Hub](https://onbo-hub.com) のデータを AI エージェントから使うためのスキルです。売上のあるアプリのオンボーディング（最初の画面から課金画面まで、画面の種類つき）・課金の仕組み・伸びた SNS 投稿・広告を、オンボーディングや課金画面を作りながら参考にしたり、分析したりできます。
 
-- MCP サーバー（いちばん手軽）: `https://onbo-hub.com/mcp` を claude.ai・ChatGPT のカスタムコネクタに入れるか、Claude Code で `claude mcp add --transport http onbo-hub https://onbo-hub.com/mcp` → `/mcp` でログイン
+- MCP サーバー（いちばん手軽）: `https://onbo-hub.com/mcp` を claude.ai・ChatGPT のカスタムコネクタに入れるか、Claude Code で `claude mcp add --transport http onbo-hub https://onbo-hub.com/mcp` → `/mcp` でログイン（`search_apps` と `get_stats` は無料のアカウントで使えて、画面の画像・オンボーディング全体・投稿・広告を返すツールは Pro）
 - スキル（Claude Code）: `/plugin marketplace add onbo-hub/skills` → `/plugin install onboardhub-data@onbo-hub`
 - そのほかのエージェント: `npx skills add onbo-hub/skills`、または <https://onbo-hub.com/skill.md> を読ませる
 - API キーは Pro プランで [ダッシュボード](https://onbo-hub.com/dashboard) から発行できます
