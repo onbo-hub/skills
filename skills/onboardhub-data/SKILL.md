@@ -4,7 +4,7 @@ description: Real onboarding flows, paywalls, monetization setups, growth posts 
 compatibility: Requires internet access to call https://onbo-hub.com/api/v1
 metadata:
   author: onbo-hub
-  version: "1.4"
+  version: "1.6"
 ---
 
 # Onbo Hub Data Skill
@@ -49,7 +49,7 @@ https://onbo-hub.com
 
 Rate limit: 60 requests per minute per key.
 
-**MCP alternative:** the same data is available from the remote MCP server at `https://onbo-hub.com/mcp` (tools: `find_screens`, `search_apps`, `get_app`, `view_screens`, `get_stats`; they return the screen images directly). MCP clients that support OAuth sign in with an Onbo Hub account; others can send the API key as `Authorization: Bearer <key>`. If those tools are already connected, prefer them over these REST calls.
+**MCP alternative:** the same data is available from the remote MCP server at `https://onbo-hub.com/mcp` (tools: `find_screens`, `search_apps`, `get_app`, `view_screens`, `get_stats`; they return the screen images directly). MCP clients that support OAuth sign in with an Onbo Hub account; others can send the API key as `Authorization: Bearer <key>`. `search_apps` and `get_stats` work with a free account; the other tools need Pro. If those tools are already connected, prefer them over these REST calls.
 
 ---
 
@@ -76,6 +76,7 @@ Rate limit: 60 requests per minute per key.
 - `ux_highlights_en` — UX highlights in English
 - `target_audience_en` — target audience in English
 - `app_store_url`, `play_store_url`, `website_url`
+- `app_store_missing_since` — date the app was first not found on the App Store in any country, checked monthly (`null` = found as of `app_store_checked_at`). It can mean the app was pulled or re-released under a new ID, so don't send users to `app_store_url` for these apps; the onboarding and revenue shown are from when the app was live
 
 The list does not include screenshots. To compare one kind of screen across apps, use `GET /api/v1/screenshots`; for one app's whole flow, fetch its detail.
 
